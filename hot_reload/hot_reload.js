@@ -1,27 +1,18 @@
 const status = document.getElementById('status');
 
-function buildEnvImports() {
-    const env = {
-        memory: Module.wasmMemory,
-        table: Module.wasmTable,
-        __memory_base: new WebAssembly.Global({ value: 'i32', mutable: false }, 1024),
-        __table_base: new WebAssembly.Global({ value: 'i32', mutable: false }, 0),
-    };
-
-    // Automatically forward all exported functions from Module._<func>
-    for (const key in Module) {
-        if (key.startsWith('_') && typeof Module[key] === 'function') {
-            const wasmFuncName = key.slice(1); // Strip leading underscore
-            env[wasmFuncName] = Module[key];
-        }
-    }
-
-    return env;
-}
-
 function getWasmImports() {
     return {
-        env: buildEnvImports(),
+        env: {
+            memory: Module.wasmMemory,
+            table: Module.wasmTable,
+            __memory_base: new WebAssembly.Global({value: 'i32', mutable: false}, 1024),
+            __table_base: new WebAssembly.Global({value: 'i32', mutable: false}, 0),
+            SDL_SetRenderDrawColor: Module._SDL_SetRenderDrawColor,
+
+            SDL_RenderClear: Module._SDL_RenderClear,
+            SDL_RenderPresent: Module._SDL_RenderPresent,
+            SDL_RenderFillRect: Module._SDL_RenderFillRect,
+        },
         wasi_snapshot_preview1: {}
     };
 }
