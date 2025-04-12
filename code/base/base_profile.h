@@ -1,12 +1,8 @@
-//
-// Created by Abdik on 2025-03-18.
-//
-
 #ifndef BASE_PROFILE_H
 #define BASE_PROFILE_H
 
 #if !defined(PROFILING_ENABLED)
-#  define PROFILING_ENABLED 1
+#define PROFILING_ENABLED 1
 #endif
 
 #if PROFILING_ENABLED

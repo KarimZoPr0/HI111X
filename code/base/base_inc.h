@@ -1,7 +1,3 @@
-//
-// Created by Abdik on 2025-03-18.
-//
-
 #ifndef BASE_INC_H
 #define BASE_INC_H
 
