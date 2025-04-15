@@ -1,17 +1,18 @@
 #include <emscripten.h>
 #include <SDL2/SDL.h>
-#include "../base/base_inc.h"
-#include "../base/base_inc.c"
 #include "game.h"
 
-const int speed = 5;
+// A global variable in the side module
+static int speed = 10;
 
 EMSCRIPTEN_KEEPALIVE
-void update(GameContext* ctx) {
+void update_and_render(GameContext* ctx) {
+    if (!ctx) return;
 
-    if (ctx->keyboard[KEY_UP]    || ctx->keyboard[KEY_W]) ctx->player.y -= speed;
-    if (ctx->keyboard[KEY_DOWN]  || ctx->keyboard[KEY_S]) ctx->player.y += speed;
-    if (ctx->keyboard[KEY_LEFT]  || ctx->keyboard[KEY_A]) ctx->player.x -= speed;
+    // Example: modifying state based on keyboard input
+    if (ctx->keyboard[KEY_UP] || ctx->keyboard[KEY_W]) ctx->player.y -= speed;
+    if (ctx->keyboard[KEY_DOWN] || ctx->keyboard[KEY_S]) ctx->player.y += speed;
+    if (ctx->keyboard[KEY_LEFT] || ctx->keyboard[KEY_A]) ctx->player.x -= speed;
     if (ctx->keyboard[KEY_RIGHT] || ctx->keyboard[KEY_D]) ctx->player.x += speed;
 
     if (ctx->player.x < 0) {
@@ -25,12 +26,13 @@ void update(GameContext* ctx) {
         ctx->player.y = 480 - ctx->player.h;
     }
 
-        SDL_SetRenderDrawColor(ctx->renderer, 255, 100, 100, 255);
+    // Use a stack-allocated SDL_Rect
+    SDL_Rect rect = {200, 50, 50, 50};
+
+    SDL_SetRenderDrawColor(ctx->renderer, 255, 100, 100, 255);
     SDL_RenderClear(ctx->renderer);
 
     SDL_SetRenderDrawColor(ctx->renderer, 0, 255, 255, 255);
-    SDL_RenderFillRect(ctx->renderer, &ctx->player);
-
+    SDL_RenderFillRect(ctx->renderer, &rect);
     SDL_RenderPresent(ctx->renderer);
-    return;
 }

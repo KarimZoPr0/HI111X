@@ -1,24 +1,22 @@
-#include "../../base/base_inc.h"
-#include "../../base/base_inc.c"
 #include <emscripten.h>
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../game/game.h"
+#include "game/game.h"
 #include "input.h"
 #include "input.c"
 
 GameContext ctx;
 
-typedef void (*UpdateFunc)(GameContext*);
-UpdateFunc updateFunc = NULL;
+typedef void (*update_and_render_func)(GameContext*);
+update_and_render_func update_and_render = NULL;
 
-EMSCRIPTEN_KEEPALIVE void setUpdateFunc(UpdateFunc f) {
-    updateFunc = f;
-    printf("setUpdateFunc called! Function pointer is %p\n", f);
+EMSCRIPTEN_KEEPALIVE void set_update_and_render_func(update_and_render_func f) {
+    update_and_render = f;
+    printf("set_update_and_render_func called! Function pointer is %p\n", f);
 }
 
-internal void processEvents() {
+ void processEvents() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
@@ -34,20 +32,17 @@ internal void processEvents() {
 
 void loop() {
     processEvents();
-
-    if (updateFunc) {
-        updateFunc(&ctx);
+    if (update_and_render) {
+        update_and_render(&ctx);
     }
 }
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window *win = SDL_CreateWindow("Hot Reload", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    SDL_Window *win = SDL_CreateWindow("Reload", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 
-    // Initialize the renderer and store it in the context
     ctx.renderer = SDL_CreateRenderer(win, -1, 0);
 
-    // Initialize game context
     ctx.player.x = 400;
     ctx.player.y = 300;
     ctx.player.w = 50;

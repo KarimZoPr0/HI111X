@@ -4,7 +4,7 @@
 
 extern GameContext ctx;
 
-internal KeyCode mapSDLScancodeToKeyCode(SDL_Scancode scancode)
+static KeyCode mapSDLScancodeToKeyCode(SDL_Scancode scancode)
 {
     switch (scancode)
     {
@@ -77,7 +77,7 @@ internal KeyCode mapSDLScancodeToKeyCode(SDL_Scancode scancode)
 #define MAX_KEYBOARD_KEYS 350
 
 
-internal void doKeyDown(SDL_KeyboardEvent* event)
+static void doKeyDown(SDL_KeyboardEvent* event)
 {
     if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS)
     {
@@ -86,7 +86,7 @@ internal void doKeyDown(SDL_KeyboardEvent* event)
     }
 }
 
-internal void doKeyUp(SDL_KeyboardEvent* event)
+static void doKeyUp(SDL_KeyboardEvent* event)
 {
     if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS)
     {

@@ -123,7 +123,6 @@ typedef enum {
     CMD_PRESENT
 } CommandType;
 
-// Command structure
 typedef struct {
     CommandType type;
     union {
@@ -136,23 +135,18 @@ typedef struct {
     } data;
 } Command;
 
-// Command queue
 typedef struct {
     Command* commands;
     int capacity;
     int count;
 } CommandQueue;
 
-// Game context - contains all state and the command queue
 typedef struct {
-    // Game state (no SDL dependency)
-    Rect player;
+    SDL_Rect player;
     int keyboard[KEY_COUNT];
 
-    // Command queue for rendering instructions
     CommandQueue cmdQueue;
     SDL_Renderer* renderer;
-
 } GameContext;
 
 
