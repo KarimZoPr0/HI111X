@@ -22,12 +22,12 @@
     </style>
 </head>
 <body>
-<div id="status">Waiting...</div>
 <canvas id="canvas" width="640" height="480"></canvas>
 
 <script>
     window.Module = {
-        canvas: document.getElementById('canvas')
+        canvas: document.getElementById('canvas'),
+        locateFile: (path) => 'build/' + path
     };
 </script>
 

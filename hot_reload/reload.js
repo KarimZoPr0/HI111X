@@ -1,5 +1,4 @@
 function getWasmImports() {
-    // Create basic environment imports
     const env = {
         memory: Module.wasmMemory,
         table: Module.wasmTable,
@@ -12,12 +11,10 @@ function getWasmImports() {
     // Add functions from the main module
     for (const key in Module) {
         if (typeof Module[key] === 'function' && key.startsWith('_')) {
-            // For SDL functions, add versions both with and without underscore
             if (key.startsWith('_SDL_')) {
-                const sdlFuncName = key.substring(1); // Remove leading underscore
+                const sdlFuncName = key.substring(1);
                 env[sdlFuncName] = Module[key];
             }
-            // Add all underscore functions
             const importName = key.substring(1);
             if (!Object.hasOwn(env, importName)) {
                 env[importName] = Module[key];
@@ -25,11 +22,8 @@ function getWasmImports() {
         }
     }
 
-    // Return the minimal imports with empty GOT.mem for globals
-    // (we'll use static globals only so this can be empty)
     return {
         env,
-        "GOT.mem": {},
         wasi_snapshot_preview1: {},
     };
 }
@@ -48,7 +42,7 @@ function update_and_render_funWrapper(contextPtr) {
 
 async function reloadWasm() {
     try {
-        const wasmUrl = `/hot_reload/build/game.wasm?t=${Date.now()}`;
+        const wasmUrl = Module.locateFile('game.wasm') + `?t=${Date.now()}`;
         const response = await fetch(wasmUrl);
 
         if (!response.ok) {

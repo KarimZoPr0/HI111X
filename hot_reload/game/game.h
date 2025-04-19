@@ -144,9 +144,9 @@ typedef struct {
 typedef struct {
     SDL_Rect player;
     int keyboard[KEY_COUNT];
+    SDL_Texture* playerTexture;
 
     CommandQueue cmdQueue;
     SDL_Renderer* renderer;
+    int is_initialized;
 } GameContext;
-
-

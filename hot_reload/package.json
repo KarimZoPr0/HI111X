@@ -1,0 +1,13 @@
+{
+  "name": "hot_reload",
+  "version": "1.0.0",
+  "scripts": {
+    "watch": "node build.js SDL",
+    "serve": "http-server -p 8080"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "ws": "^8.18.1",
+    "http-server": "^14.1.1"
+  }
+}

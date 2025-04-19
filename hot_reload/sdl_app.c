@@ -1,5 +1,6 @@
 #include <emscripten.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "game/game.h"
@@ -39,14 +40,18 @@ void loop() {
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window *win = SDL_CreateWindow("Reload", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 
-    ctx.renderer = SDL_CreateRenderer(win, -1, 0);
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        fprintf(stderr, "IMG_Init failed: %s\n", IMG_GetError());
+        return EXIT_FAILURE;
+    }
 
-    ctx.player.x = 400;
-    ctx.player.y = 300;
-    ctx.player.w = 50;
-    ctx.player.h = 50;
+    /* window / renderer */
+    SDL_Window *win = SDL_CreateWindow(
+        "Reload", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    ctx.renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+
 
     memset(&ctx.keyboard, 0, sizeof(int) * KEY_COUNT);
 

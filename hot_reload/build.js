@@ -1,114 +1,72 @@
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const { performance } = require('perf_hooks');
-const ws = require('ws');
-const chokidar = require('chokidar');
+const WebSocket = require('ws');
+const chokidar  = require('chokidar');
 
-const wss = new ws.Server({ port: 8081 });
+const wss = new WebSocket.Server({ port: 8081 });
 
 const notify = () => {
-    console.log('Notifying clients to reload...');
-    wss.clients.forEach(client => {
-        if (client.readyState === ws.OPEN) {
-            client.send('reload', err => {
-                if (err) console.error('Error sending reload notification:', err);
-            });
+    for (const client of wss.clients) {
+        if (client.readyState === WebSocket.OPEN) {
+            try {
+                client.send('reload');
+            } catch (err) {
+                console.error('Error sending reload:', err);
+            }
         }
-    });
+    }
 };
 
-function runCommand(command) {
-    return new Promise((resolve, reject) => {
-        console.log(`Executing: ${command}`);
-        exec(command, (err, stdout, stderr) => {
-            if (err) {
-                console.error(`Error: ${stderr || err.message}`);
-                resolve({ error: stderr || err, stdout });
-            } else {
-                if (stdout) console.log(`Output: ${stdout}`);
-                if (stderr) console.warn(`Warning: ${stderr}`);
-                resolve({ error: null, stdout });
-            }
-        });
-    });
-}
-
-function getMainCmd() {
-    return [
-        'emcc sdl_app.c', '-o build/sdl_app.js',
-        '-sUSE_SDL=2',
-        '-sMAIN_MODULE=2',
-        '-sEXPORTED_FUNCTIONS="[_main,_set_update_and_render_func,_SDL_SetRenderDrawColor,_SDL_RenderClear,_SDL_RenderFillRect,_SDL_RenderPresent]"',
-        '-sEXPORTED_RUNTIME_METHODS="[cwrap,addFunction,wasmMemory,wasmTable,printErr,abort,asm]"', // Added 'asm'
-        '-sALLOW_MEMORY_GROWTH=1',
-        '-sASSERTIONS=1',
-    ].join(' ');
-}
-
-function getGameCmd() {
-    return [
-        'emcc game/game.c', '-o build/game.wasm',
-        '-O2',
-        '-sSIDE_MODULE=2',
-        '-sEXPORTED_FUNCTIONS="[_update_and_render]"',
-    ].join(' ');
-}
-
-async function buildMain() {
-    console.log('\nBuilding main module...');
+function build(name, cmd, args, { notifyOnSuccess = false } = {}) {
     const start = performance.now();
-    try {
-        const { error } = await runCommand(getMainCmd());
-        if (error) {
-            console.error('Main module build failed.');
+    console.log(`[${name}] spawning: ${cmd} ${args.join(' ')}`);
+
+    const child = spawn(cmd, args, { stdio: 'inherit', shell: true });
+    child.on('error', err => {
+        console.error(`[${name}] spawn error:`, err);
+    });
+    child.on('exit', code => {
+        const ms = (performance.now() - start).toFixed(0);
+        if (code === 0) {
+            console.log(`[${name}] succeeded in ${ms}ms`);
+            if (notifyOnSuccess) notify();
         } else {
-            console.log('Main module build successful.');
+            console.error(`[${name}] failed (code ${code}) in ${ms}ms`);
         }
-    } catch (error) {
-        console.error('Unexpected error during main build process:', error);
-    } finally {
-        const duration = (performance.now() - start).toFixed(2);
-        console.log(`Main module build process finished in ${duration}ms`);
-    }
+    });
 }
 
-async function buildLogic() {
-    console.log('\nBuilding logic side module...');
-    const start = performance.now();
-    let success = false;
-    try {
-        const { error } = await runCommand(getGameCmd());
-        if (error) {
-            console.error('Logic module build failed.');
-        } else {
-            console.log('Logic module build successful.');
-            success = true;
-        }
-    } catch (error) {
-        console.error('Unexpected error during logic build process:', error);
-    } finally {
-        const duration = (performance.now() - start).toFixed(2);
-        console.log(`Logic module build process finished in ${duration}ms`);
-        if (success) {
-            notify();
-        }
-    }
-}
+const MAIN_ARGS = [
+    'sdl_app.c',
+    '-o', 'build/sdl_app.js',
+    '-sUSE_SDL=2',
+    '-sUSE_SDL_IMAGE=2',
+    '-sSDL2_IMAGE_FORMATS=png',
+    '-sMAIN_MODULE=1',
+    '-sEXPORT_ALL=1',
+    '-sALLOW_MEMORY_GROWTH=1',
+    '-sEXPORTED_RUNTIME_METHODS="[cwrap,addFunction,wasmMemory,wasmTable]"',
+    '-sASSERTIONS=1',
+    '--preload-file', 'gfx',
+];
 
-(async () => {
-    await buildMain();
-    await buildLogic();
+const LOGIC_ARGS = [
+    'game/game.c',
+    '-o', 'build/game.wasm',
+    '-O2',
+    '-sSIDE_MODULE=2',
+];
 
-    console.log('\nWatching game/game.c for changes...');
-    chokidar.watch('game/game.c').on('change', (path) => {
-        console.log(`\nDetected change in ${path}`);
-        buildLogic();
-    });
+build('Main Module',  'emcc', MAIN_ARGS);
+build('Logic Module', 'emcc', LOGIC_ARGS, { notifyOnSuccess: true });
 
-    wss.on('connection', ws => {
-        console.log('Client connected.');
-        ws.on('close', () => console.log('Client disconnected.'));
-        ws.on('error', (error) => console.error('WebSocket server error:', error));
-    });
+chokidar.watch('game/game.c').on('change', path => {
+    console.log(`File changed: ${path}, rebuilding logic…`);
+    build('Logic Module', 'emcc', LOGIC_ARGS, { notifyOnSuccess: true });
+});
 
-    console.log('WebSocket server started on port 8081.');
-})();
+wss.on('connection', socket => {
+    console.log('Client connected');
+    socket.on('close',   () => console.log('Client disconnected'));
+    socket.on('error',   e  => console.error('WebSocket error:', e));
+});

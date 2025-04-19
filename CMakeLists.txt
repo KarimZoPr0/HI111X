@@ -31,17 +31,5 @@ set_target_properties(Platform PROPERTIES LINK_FLAGS "-mconsole")
 add_library(Game SHARED code/game/game.c ${BASE_SOURCES})
 target_link_libraries(Game PRIVATE SDL2_Common)
 
-
-add_executable(main Demo1/main.c)
-target_link_libraries(main PRIVATE SDL2_Common)
-
-add_library(side SHARED Demo1/side.c)
-target_link_libraries(side PRIVATE SDL2_Common)
-set_target_properties(side PROPERTIES PREFIX "")
-
-add_executable(Client client.c)
-target_link_libraries(Client PRIVATE SDL2_Common)
-
-add_executable(Server server.c)
-target_link_libraries(Server PRIVATE SDL2_Common)
-
+add_executable(Hot_server hot_reload/server_app.c)
+target_link_libraries(Hot_server PRIVATE SDL2_Common)
