@@ -1,20 +1,16 @@
 function getWasmImports() {
     const env = {
         memory: Module.wasmMemory,
-        table: Module.wasmTable,
+        table:  Module.wasmTable,
+        __indirect_function_table: Module.wasmTable,
         __memory_base: Module.__memory_base ?? 1024,
-        __table_base: Module.__table_base ?? 0,
+        __table_base:  Module.__table_base  ?? 0,
+        __stack_pointer: new WebAssembly.Global({ value: 'i32', mutable: true }, 5242880),
     };
 
-    env.__stack_pointer = new WebAssembly.Global({value: 'i32', mutable: true}, 5242880);
-
-    // Add functions from the main module
+    // Add ALL function imports from the main module
     for (const key in Module) {
         if (typeof Module[key] === 'function' && key.startsWith('_')) {
-            if (key.startsWith('_SDL_')) {
-                const sdlFuncName = key.substring(1);
-                env[sdlFuncName] = Module[key];
-            }
             const importName = key.substring(1);
             if (!Object.hasOwn(env, importName)) {
                 env[importName] = Module[key];

@@ -1,5 +1,15 @@
+#ifndef GAME_H
+#define GAME_H
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_net.h>
+
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
+
+#define PADDLE_W       10
+#define PADDLE_H       80
+#define BALL_SIZE      10
 
 typedef enum KeyCode KeyCode;
 enum KeyCode
@@ -94,59 +104,41 @@ enum KeyCode
     KEY_COUNT
 };
 
-typedef struct GameInput GameInput;
-struct GameInput
-{
-    int keyboard[KEY_COUNT];
-};
-
-typedef struct Rect Rect;
-struct Rect
-{
-    int x;
-    int y;
-    int w;
-    int h;
-
-    // color
-    int r;
-    int g;
-    int b;
-    int a;
-};
-
-// Command types
 typedef enum {
-    CMD_SET_DRAW_COLOR,
-    CMD_CLEAR,
-    CMD_FILL_RECT,
-    CMD_PRESENT
-} CommandType;
+    STATE_WAITING,   // Waiting for opponent to connect and be ready
+    STATE_PLAYING,   // Active gameplay
+    STATE_SCORE,     // Brief pause after scoring
+    STATE_DISCONNECT // Connection lost
+} GameState;
 
 typedef struct {
-    CommandType type;
-    union {
-        struct {
-            int r, g, b, a;
-        } color;
-        struct {
-            int x, y, w, h;
-        } rect;
-    } data;
-} Command;
+    SDL_Renderer *renderer;
 
-typedef struct {
-    Command* commands;
-    int capacity;
-    int count;
-} CommandQueue;
+    /* input --------------------------------------------------------- */
+    int          keyboard[KEY_COUNT];
 
-typedef struct {
-    SDL_Rect player;
-    int keyboard[KEY_COUNT];
-    SDL_Texture* playerTexture;
+    /* paddles + ball ------------------------------------------------ */
+    SDL_Rect     paddle1;       // Player 1 paddle (left)
+    SDL_Rect     paddle2;       // Player 2 paddle (right)
+    SDL_Rect     ball;
+    int          ballVelX, ballVelY;
 
-    CommandQueue cmdQueue;
-    SDL_Renderer* renderer;
-    int is_initialized;
+    /* networking ---------------------------------------------------- */
+    TCPsocket    sock;
+    SDLNet_SocketSet set;
+    int          connected;
+
+    /* game state ---------------------------------------------------- */
+    GameState    gameState;     // Current game state
+    int          localReady;    // Local player is ready
+    int          remoteReady;   // Remote player is ready
+    int          ballOwner;     // Who controls ball physics
+    unsigned int matchId;       // Random ID for synchronization
+    int          playerType;    // 1 = Player 1 (blue, left), 2 = Player 2 (orange, right)
+    int          scoreTimer;    // Timer for score state
+
+    /* misc ---------------------------------------------------------- */
+    int          is_initialized;
 } GameContext;
+
+#endif /* GAME_H */

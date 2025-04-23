@@ -2,7 +2,7 @@
 // Created by Karim on 3/25/2024.
 //
 
-extern GameContext ctx;
+extern GameContext *ctx;
 
 static KeyCode mapSDLScancodeToKeyCode(SDL_Scancode scancode)
 {
@@ -82,7 +82,7 @@ static void doKeyDown(SDL_KeyboardEvent* event)
     if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS)
     {
         KeyCode key_code = mapSDLScancodeToKeyCode(event->keysym.scancode);
-        ctx.keyboard[key_code] = 1;
+        ctx->keyboard[key_code] = 1;
     }
 }
 
@@ -91,7 +91,7 @@ static void doKeyUp(SDL_KeyboardEvent* event)
     if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS)
     {
         KeyCode key_code = mapSDLScancodeToKeyCode(event->keysym.scancode);
-        ctx.keyboard[key_code] = 0;
+        ctx->keyboard[key_code] = 0;
     }
 }
 
