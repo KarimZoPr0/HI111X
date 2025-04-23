@@ -1,8 +1,0 @@
-{
-    "backends": {
-        "SDL2": {
-            "buildMain": "emcc backends/sdl2/sdl_app.c -o build/sdl_app.js -s WASM=1 -s USE_SDL=2 -s MAIN_MODULE=2 -s EXPORTED_FUNCTIONS=\"['_main','_setUpdateFunc','_SDL_SetRenderDrawColor','_SDL_RenderClear','_SDL_RenderFillRect','_SDL_RenderPresent', 'SDL_RenderDrawRect']\" -s EXPORTED_RUNTIME_METHODS=\"['addFunction','wasmMemory','wasmTable']\" -s ALLOW_TABLE_GROWTH",
-            "buildLogic": "emcc game/game.c -O2 -s SIDE_MODULE=2 -s IMPORTED_MEMORY -s EXPORTED_FUNCTIONS=\"['_update']\" -o build/game.wasm -s USE_SDL=2"
-        }
-    }
-}

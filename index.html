@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Hot‑reloaded SDL_net Pong</title>
+    <style>
+        html,body{margin:0;background:#222;}
+        canvas{display:block;margin:20px auto;border:1px solid #555}
+    </style>
+</head>
+<body>
+<canvas id="canvas" width="640" height="480"></canvas>
+
+<script>
+    window.Module = {
+        canvas: document.getElementById('canvas'),
+        locateFile: p => 'build/' + p,
+        websocket: { url: 'ws://' + location.hostname + ':12345' }
+    };
+</script>
+
+<script src="build/sdl_app.js" async defer></script>
+<script src="reload.js" async defer></script>
+</body>
+</html>
