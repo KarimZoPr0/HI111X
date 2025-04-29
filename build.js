@@ -19,7 +19,7 @@ function run(name, cmd, args, notifyOnSuccess = false) {
 const MAIN = [
     'sdl_app.c','-o','build/sdl_app.js',
     '-sUSE_SDL=2','-sUSE_SDL_NET=2','-lwebsocket.js',
-    '-sWEBSOCKET_URL="ws://localhost:12345"',
+    '-sWEBSOCKET_URL="ws://127.0.0.1:12345"',
     '-sMAIN_MODULE=1','-sEXPORT_ALL=1',
     '-sALLOW_MEMORY_GROWTH=1',
     '-sEXPORTED_RUNTIME_METHODS="[cwrap,addFunction,wasmMemory,wasmTable]"',
